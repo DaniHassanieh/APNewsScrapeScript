@@ -14,10 +14,10 @@ def get_firefox_webdriver():
 def get_unique_web_page_links(web_page_url:str, firefox_webdriver:webdriver.Firefox):
     unique_web_page_links = []
     firefox_webdriver.get(web_page_url)
-    all_links_on_web_page = firefox_webdriver.find_elements(By.XPATH, "//a[@href]")
-    for link_on_web_page in all_links_on_web_page:
-        if link_on_web_page.get_attribute("href") not in unique_web_page_links:
-            unique_web_page_links.append(link_on_web_page.get_attribute("href"))
+    all_web_page_links = firefox_webdriver.find_elements(By.XPATH, "//a[@href]")
+    for web_page_link in all_web_page_links:
+        if web_page_link.get_attribute("href") not in unique_web_page_links:
+            unique_web_page_links.append(web_page_link.get_attribute("href"))
     return unique_web_page_links
 
 
@@ -29,20 +29,21 @@ def get_strings_with_common_substring(substring:str, string_list:list[str],):
     return strings_with_common_substring
 
 
+def get_apnews_article_content(article_url:str, firefox_webdriver:webdriver.Firefox):
+    firefox_webdriver.get(article_url)
+    title = firefox_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/div[1]/h1").text
+    author = firefox_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/span/span[1]").text
+    date = firefox_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/span/span[2]").get_attribute("title")
+    story = firefox_webdriver.find_element(By.CLASS_NAME, "Article").text
+    return (title, author, date, story)
+
+
 firefox_apnews_webdriver = get_firefox_webdriver()
-apnews_web_page_url = "https://apnews.com/"
+ap_top_news_url = "https://apnews.com/hub/ap-top-news"
+ap_top_news_links = get_unique_web_page_links(ap_top_news_url, firefox_apnews_webdriver)
+ap_top_news_article_urls = get_strings_with_common_substring("https://apnews.com/article/", ap_top_news_links)
 
-unique_apnews_web_page_links = get_unique_web_page_links(apnews_web_page_url, firefox_apnews_webdriver)
-apnews_hub_web_page_urls = get_strings_with_common_substring("https://apnews.com/hub/", unique_apnews_web_page_links)
-
-
-boowomp = []
-
-for apnews_hub_web_page_url in apnews_hub_web_page_urls:
-    apnews_hub_web_page_links = get_unique_web_page_links(apnews_hub_web_page_url, firefox_apnews_webdriver)
-    apnews_hub_article_web_page_links = get_strings_with_common_substring("https://apnews.com/article/", apnews_hub_web_page_links)
-    boowomp.append(apnews_hub_article_web_page_links)
-
-print(boowomp)
+for ap_top_news_article_url in ap_top_news_article_urls:
+    print(get_apnews_article_content(ap_top_news_article_url, firefox_apnews_webdriver))
 
 firefox_apnews_webdriver.quit()
