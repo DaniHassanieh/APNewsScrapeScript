@@ -1,8 +1,9 @@
+from subprocess import CREATE_NO_WINDOW 
 from tkinter import *
 from tkinter import ttk
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-# from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.common.by import By
 
 
@@ -13,7 +14,10 @@ ROOT_HEIGHT = 600
 def get_firefox_webdriver():
     firefox_webdriver_options = FirefoxOptions()
     firefox_webdriver_options.add_argument("--headless")
-    firefox_webdriver = webdriver.Firefox(firefox_webdriver_options)
+    firefox_webdriver_options.add_argument("--disable-gpu")
+    firefox_webdriver_service = FirefoxService(log_path="nul")
+    firefox_webdriver_service.creation_flags = CREATE_NO_WINDOW
+    firefox_webdriver = webdriver.Firefox(firefox_webdriver_options, firefox_webdriver_service)
     return firefox_webdriver
 
 def get_unique_web_page_links(web_page_url:str, firefox_webdriver:webdriver.Firefox):
