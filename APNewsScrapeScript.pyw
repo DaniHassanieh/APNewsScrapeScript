@@ -17,7 +17,7 @@ def get_firefox_webdriver():
     firefox_webdriver_options.add_argument("--disable-gpu")
     firefox_webdriver_service = FirefoxService(log_path="nul")
     firefox_webdriver_service.creation_flags = CREATE_NO_WINDOW
-    firefox_webdriver = webdriver.Firefox(firefox_webdriver_options, firefox_webdriver_service)
+    firefox_webdriver = webdriver.Firefox(options=firefox_webdriver_options, service=firefox_webdriver_service)
     return firefox_webdriver
 
 def get_unique_web_page_links(web_page_url:str, firefox_webdriver:webdriver.Firefox):
