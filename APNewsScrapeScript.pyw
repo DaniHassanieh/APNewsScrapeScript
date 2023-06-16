@@ -2,8 +2,8 @@ from subprocess import CREATE_NO_WINDOW
 from tkinter import *
 from tkinter import ttk
 from selenium import webdriver
-from selenium.webdriver.edge.options import Options as EdgeOptions
-from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.common.by import By
 
 
@@ -11,19 +11,19 @@ ROOT_WIDTH = 800
 ROOT_HEIGHT = 600
 
 
-def get_Edge_webdriver():
-    Edge_webdriver_options = EdgeOptions()
-    Edge_webdriver_options.add_argument("--headless")
-    Edge_webdriver_options.add_argument("--disable-gpu")
-    Edge_webdriver_service = EdgeService(executable_path=r"geckodriver-v0.33.0-win32\geckodriver.exe", log_path="nul")
-    Edge_webdriver_service.creation_flags = CREATE_NO_WINDOW
-    Edge_webdriver = webdriver.Edge(options=Edge_webdriver_options, service=Edge_webdriver_service)
-    return Edge_webdriver
+def get_firefox_webdriver():
+    firefox_webdriver_options = FirefoxOptions()
+    firefox_webdriver_options.add_argument("--headless")
+    firefox_webdriver_options.add_argument("--disable-gpu")
+    firefox_webdriver_service = FirefoxService(executable_path=r"geckodriver-v0.33.0-win32\geckodriver.exe", log_path="nul")
+    firefox_webdriver_service.creation_flags = CREATE_NO_WINDOW
+    firefox_webdriver = webdriver.Firefox(options=firefox_webdriver_options, service=firefox_webdriver_service)
+    return firefox_webdriver
 
-def get_unique_web_page_links(web_page_url:str, Edge_webdriver:webdriver.Edge):
-    Edge_webdriver.get(web_page_url)
+def get_unique_web_page_links(web_page_url:str, firefox_webdriver:webdriver.Firefox):
+    firefox_webdriver.get(web_page_url)
     unique_web_page_links = []
-    all_link_web_page_elements = Edge_webdriver.find_elements(By.XPATH, "//a[@href]")
+    all_link_web_page_elements = firefox_webdriver.find_elements(By.XPATH, "//a[@href]")
     for link_web_page_element in all_link_web_page_elements:
         if link_web_page_element.get_attribute("href") not in unique_web_page_links:
             unique_web_page_links.append(link_web_page_element.get_attribute("href"))
@@ -36,25 +36,25 @@ def get_strings_with_common_substring(substring:str, string_list:list[str],):
             strings_with_common_substring.append(string)
     return strings_with_common_substring
 
-def get_apnews_web_page_article_headlines_and_links(hub_url:str, Edge_webdriver:webdriver.Edge):
-    Edge_webdriver.get(hub_url)
+def get_apnews_web_page_article_headlines_and_links(hub_url:str, firefox_webdriver:webdriver.Firefox):
+    firefox_webdriver.get(hub_url)
     article_headlines_and_links = []
-    all_link_web_page_elements = Edge_webdriver.find_elements(By.XPATH, "//a[contains(@data-key,'card-headline')]")
+    all_link_web_page_elements = firefox_webdriver.find_elements(By.XPATH, "//a[contains(@data-key,'card-headline')]")
     for link_web_page_element in all_link_web_page_elements:
         if "https://apnews.com/article/" in link_web_page_element.get_attribute("href"):
             article_headlines_and_links.append((link_web_page_element.text, link_web_page_element.get_attribute("href")))
     return article_headlines_and_links
 
-def get_apnews_article_content(article_url:str, Edge_webdriver:webdriver.Edge):
-    Edge_webdriver.get(article_url)
-    headline = Edge_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/div[1]/h1").text
-    author = Edge_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/span/span[1]").text
+def get_apnews_article_content(article_url:str, firefox_webdriver:webdriver.Firefox):
+    firefox_webdriver.get(article_url)
+    headline = firefox_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/div[1]/h1").text
+    author = firefox_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/span/span[1]").text
     date = None
     try:
-        date = Edge_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/span/span[2]").get_attribute("title")
+        date = firefox_webdriver.find_element(By.XPATH, "/html/body/div[2]/div/main/div[3]/div/div[4]/span/span[2]").get_attribute("title")
     except:
         pass
-    story = Edge_webdriver.find_element(By.CLASS_NAME, "Article").text
+    story = firefox_webdriver.find_element(By.CLASS_NAME, "Article").text
     return (headline, author, date, story, article_url)
 
 
@@ -84,8 +84,8 @@ def make_new_tab(tab_name:str, notebook:ttk.Notebook):
     return new_tab
 
 
-def click_article_headline(article_headline_and_link:tuple, notebook:ttk.Notebook, Edge_webdriver:webdriver.Edge):
-    article_content = get_apnews_article_content(article_headline_and_link[1], Edge_webdriver)
+def click_article_headline(article_headline_and_link:tuple, notebook:ttk.Notebook, firefox_webdriver:webdriver.Firefox):
+    article_content = get_apnews_article_content(article_headline_and_link[1], firefox_webdriver)
     text = ""
     for item in article_content:
         if item != None:
@@ -104,17 +104,17 @@ tab_holder_notebook = ttk.Notebook(second_apnews_frame)
 tab_holder_notebook.pack()
 apnews_hub_tab = make_new_tab("AP Top News", tab_holder_notebook)
 
-Edge_webdriver_apnews = get_Edge_webdriver()
+firefox_webdriver_apnews = get_firefox_webdriver()
 url_top_apnews = "https://apnews.com/hub/ap-top-news"
-links_top_apnews = get_unique_web_page_links(url_top_apnews, Edge_webdriver_apnews)
+links_top_apnews = get_unique_web_page_links(url_top_apnews, firefox_webdriver_apnews)
 
-article_headlines_and_links = get_apnews_web_page_article_headlines_and_links(url_top_apnews, Edge_webdriver_apnews)
+article_headlines_and_links = get_apnews_web_page_article_headlines_and_links(url_top_apnews, firefox_webdriver_apnews)
 
 for i in range(len(article_headlines_and_links)):
     Button(
         apnews_hub_tab,
         text=article_headlines_and_links[i][0],
-        command=lambda i=i: click_article_headline(article_headlines_and_links[i], tab_holder_notebook, Edge_webdriver_apnews)
+        command=lambda i=i: click_article_headline(article_headlines_and_links[i], tab_holder_notebook, firefox_webdriver_apnews)
     ).grid(
         row=i,
         column=0
@@ -123,4 +123,4 @@ for i in range(len(article_headlines_and_links)):
 
 root_apnews_window.mainloop()
 
-Edge_webdriver_apnews.quit()
+firefox_webdriver_apnews.quit()
